@@ -1,0 +1,231 @@
+import { StatusBar } from 'expo-status-bar';
+import React, { useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  Button,
+  FlatList,
+  TouchableOpacity,
+} from 'react-native';
+
+export default function App() {
+  const [text, setText] = useState('');
+  const [reminders, setReminders] = useState([]);
+  const [completedReminders, setCompletedReminders] = useState([]); 
+  const [name, setName] = useState('');
+  const [isEditingName, setIsEditingName] = useState(true);
+  const [displayText, setDisplayText] = useState('');
+  const [isTextVisible, setIsTextVisible] = useState(false);
+  const [date, setDate] = useState('');
+  const [color, setColor] = useState('#EEC8E0');
+
+  const handleAddReminder = () => {
+    if (text && date) {
+      const reminder = {
+        text: text,
+        date: date,
+        color: color,
+      };
+      setReminders((prevReminders) => [...prevReminders, reminder]);
+      setText('');
+      setDate('');
+    }
+  };
+
+  const handleRemoveReminder = (index) => {
+    setCompletedReminders((prevCompletedReminders) => [...prevCompletedReminders, reminders[index]]);
+    setReminders((prevReminders) => prevReminders.filter((_, i) => i !== index));
+  };
+
+  const handleMoveToCompleted = (index) => {
+    setCompletedReminders((prevCompletedReminders) => [...prevCompletedReminders, reminders[index]]);
+    setReminders((prevReminders) => prevReminders.filter((_, i) => i !== index));
+  };
+
+  const handleSetUserName = () => {
+    setIsEditingName(false);
+  };
+
+  const renderItem = ({ item, index }) => (
+    <TouchableOpacity
+      style={[styles.reminderItem, { backgroundColor: item.color }]}
+      onPress={() => handleRemoveReminder(index)}
+    >
+      <Text style={styles.reminderText}>{item.text} - complete by: {item.date}</Text>
+      <Button title="Move to Completed" onPress={() => handleMoveToCompleted(index)} />
+    </TouchableOpacity>
+  );
+
+  const renderCompletedItem = ({ item }) => (
+    <View style={[styles.reminderItem, { backgroundColor: item.color }]}>
+      <Text style={styles.reminderText}>{item.text} - completed on: {item.date}</Text>
+    </View>
+  );
+
+  const handlePress = () => {
+    setDisplayText('Type your activity into the text box, enter the date, select a color for your reminder, and click the add button. Click return to exit keyboard. Tap on the to-do list item to remove it.');
+    setIsTextVisible(true);
+  };
+
+  const handleHide = () => {
+    setDisplayText('');
+    setIsTextVisible(false);
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.box}></View>
+      <Text style={styles.title2}>Easy Lifestyle:</Text>
+      <Text style={styles.title}>To-do List</Text>
+      <View style={styles.box2}>
+        <View>
+          <Button title="View Instructions" onPress={handlePress} />
+          {isTextVisible && (
+            <View>
+              <Text>
+                <Text style={styles.instructionText}>{displayText}</Text>
+              </Text>
+              <Button title="Hide Instructions" onPress={handleHide} />
+            </View>
+          )}
+        </View>
+      </View>
+      {isEditingName ? (
+        <View style={styles.nameBar}>
+          <TextInput
+            style={styles.textInput}
+            onChangeText={(name) => setName(name)}
+            value={name}
+            placeholder="Enter your name"
+          />
+          <Button title="Set Name" onPress={handleSetUserName} />
+        </View>
+      ) : (
+        <Text style={styles.nameText}>Welcome {name}!</Text>
+      )}
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.textInput}
+          onChangeText={(text) => setText(text)}
+          value={text}
+          placeholder="Add reminder"
+        />
+        <TextInput
+          style={styles.textInput}
+          onChangeText={(date) => setDate(date)}
+          value={date}
+          placeholder="Completion date"
+        />
+        <TextInput
+          style={styles.textInput}
+          onChangeText={(color) => setColor(color)}
+          value={color}
+          placeholder="Color"
+        />
+        <Button title="Add!" onPress={handleAddReminder} />
+      </View>
+      <View style={styles.container}>
+        <Text style={styles.yourTasksAreText}>{name}, your tasks are: </Text>
+      </View>
+      <FlatList
+        style={styles.list}
+        data={reminders}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => index.toString()}
+      />
+      <View style={styles.container}>
+        <Text style={styles.yourTasksAreText}>{name}, your completed tasks are: </Text>
+      </View>
+      <FlatList
+        style={styles.list}
+        data={completedReminders}
+        renderItem={renderCompletedItem}
+        keyExtractor={(item, index) => index.toString()}
+      />
+      <StatusBar style="auto" />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#B9E6FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    justifyContent: 'flex-start',
+  },
+  box: {
+    backgroundColor: '#846A6A',
+    width: '100%',
+    height: 200,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+  },
+  title: {
+    fontSize: 50,
+    fontWeight: 'bold',
+    marginVertical: 20,
+    color: 'white',
+    marginBottom: 30,
+  },
+  nameBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  nameText: {
+    fontSize: 16,
+    marginVertical: 10,
+  },
+  yourTasksAreText: {
+    fontSize: 16,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  textInput: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginEnd: 10,
+    padding: 10,
+    flex: 1,
+  },
+  list: {
+    alignSelf: 'stretch',
+    paddingHorizontal: 20,
+  },
+  reminderItem: {
+    backgroundColor: '#EEC8E0',
+    padding: 10,
+    borderRadius: 5,
+    marginVertical: 5,
+  },
+  reminderText: {
+    fontSize: 16,
+  },
+  instructionText: {
+    fontSize: 17,
+    textAlign: 'center',
+    marginTop: 5,
+  },
+  box2: {
+    width: '90%',
+    backgroundColor: '#B9E6FF',
+    marginTop: 4,
+    marginBottom: 14,
+  },
+  title2: {
+    marginTop: 60,
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginVertical: 10,
+    color: '#70257a',
+  },
+});
